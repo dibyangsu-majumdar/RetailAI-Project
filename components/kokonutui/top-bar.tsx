@@ -1,5 +1,7 @@
 "use client"
 
+import React from "react"
+
 import { Search, ShoppingBag, X } from "lucide-react"
 import { useState, useEffect, useRef } from "react"
 import { motion } from "motion/react"
@@ -42,11 +44,14 @@ export function TopBar({ cartItemCount, onCartClick, onSearch }: TopBarProps) {
       } border-b border-zinc-200 dark:border-zinc-800`}
     >
       <div className="flex items-center justify-between px-3 h-12">
-      <Link
+        <Link
           href="https://kokonutui.com/"
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm font-medium text-zinc-800 dark:text-zinc-200 shrink-0">Shop</span>
+          className="text-sm font-medium text-zinc-800 dark:text-zinc-200 shrink-0"
+        >
+          Shop
+        </Link>
         <div className="flex-1 px-8 overflow-x-auto flex items-center justify-center gap-6 scrollbar-none">
           {categories.map((category) => (
             <button
