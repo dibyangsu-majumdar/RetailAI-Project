@@ -1,2 +1,0 @@
-# v0-1-6Re7IQjQ57lJL1WGHW3OcSxU-Igs9nTWi2RK
-v0 chat Igs9nTWi2RK
