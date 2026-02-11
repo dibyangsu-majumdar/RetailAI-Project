@@ -25,12 +25,12 @@ export default function DashboardLayout({
   showChat: boolean
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const { logout, user } = useAuth()
+  const { logout, user } = useUser()
   const router = useRouter()
   const pathname = usePathname()
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await logout()
     router.push('/auth')
   }
 

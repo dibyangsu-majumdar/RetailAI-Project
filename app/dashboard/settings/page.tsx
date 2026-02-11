@@ -3,18 +3,28 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { useAuth } from '@/lib/auth-context'
+import { useUser } from '@/lib/supabase-auth-provider'
 import DashboardLayout from '@/components/dashboard-layout'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 export default function SettingsPage() {
-  const { user } = useAuth()
+  const { user } = useUser()
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
+    name: '',
+    email: '',
     notification_email: true,
     notification_sms: false,
   })
+
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.full_name || '',
+        email: user.email || '',
+      }))
+    }
+  }, [user])
 
   const handleSave = () => {
     console.log('Settings saved:', formData)
