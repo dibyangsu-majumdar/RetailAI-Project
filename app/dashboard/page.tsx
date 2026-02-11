@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,7 +12,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { TrendingDown, AlertTriangle, TrendingUp, Eye } from 'lucide-react'
+import { TrendingDown, AlertTriangle, TrendingUp, Eye, CheckCircle } from 'lucide-react'
 import { mockLocations, mockProducts, calculateInventoryKPIs } from '@/lib/mock-data'
 import DashboardLayout from '@/components/dashboard-layout'
 import KPIOverview from '@/components/kpi-overview'
@@ -21,10 +22,21 @@ import PromotionSimulator from '@/components/promotion-simulator'
 import ChatCopilot from '@/components/chat-copilot'
 
 export default function Dashboard() {
+  const searchParams = useSearchParams()
+  const paymentSuccess = searchParams.get('payment') === 'success'
+  
   const [selectedSku, setSelectedSku] = useState('')
   const [selectedLocation, setSelectedLocation] = useState(mockLocations[0]?.id || '')
   const [dateRange, setDateRange] = useState('7d')
   const [showChat, setShowChat] = useState(false)
+  const [showSuccess, setShowSuccess] = useState(paymentSuccess)
+
+  useEffect(() => {
+    if (paymentSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [paymentSuccess])
 
   const kpis = calculateInventoryKPIs()
 
@@ -32,6 +44,19 @@ export default function Dashboard() {
     <DashboardLayout onChatToggle={() => setShowChat(!showChat)} showChat={showChat}>
       <div className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
+          {/* Success Message */}
+          {showSuccess && (
+            <div className="bg-primary/10 border border-primary/20 rounded-lg p-4 flex items-center gap-3">
+              <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
+              <div className="flex-1">
+                <p className="font-medium text-sm">Payment Successful!</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Your subscription has been activated. Thank you for your purchase.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>

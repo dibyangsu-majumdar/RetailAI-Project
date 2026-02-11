@@ -42,28 +42,16 @@ export default function DashboardLayout({
       href: '/dashboard',
     },
     {
-      icon: '📈',
-      label: 'Forecasts',
-      description: '30-day demand predictions with confidence levels',
-      href: '/dashboard#forecasts',
-    },
-    {
-      icon: '✅',
-      label: 'Recommendations',
-      description: 'Smart reorder quantities and optimal stock levels',
-      href: '/dashboard#recommendations',
-    },
-    {
-      icon: '🎯',
-      label: 'Simulations',
-      description: 'Test promotion impact and scenarios',
-      href: '/dashboard#simulations',
-    },
-    {
       icon: '📥',
       label: 'Data Sources',
       description: 'Connect or upload inventory data',
       href: '/dashboard/data-sources',
+    },
+    {
+      icon: '💳',
+      label: 'Pricing',
+      description: 'View subscription plans',
+      href: '/dashboard/pricing',
     },
     {
       icon: '⚙️',
@@ -145,7 +133,8 @@ export default function DashboardLayout({
           <div className="p-4 space-y-3">
             <div className="space-y-1">
               <p className="text-xs font-medium text-sidebar-foreground/60">Logged in as</p>
-              <p className="text-sm font-medium truncate">{user?.email}</p>
+              <p className="text-sm font-medium truncate">{user?.name || user?.email}</p>
+              <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
             </div>
           </div>
         )}

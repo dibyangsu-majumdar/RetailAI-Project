@@ -6,6 +6,8 @@ interface User {
   id: string
   email: string
   name: string
+  avatar?: string
+  provider?: 'email' | 'google'
 }
 
 interface AuthContextType {
@@ -14,6 +16,7 @@ interface AuthContextType {
   isAuthenticated: boolean
   login: (email: string, password: string) => Promise<void>
   signup: (email: string, password: string, name: string) => Promise<void>
+  loginWithGoogle: (googleUser: any) => Promise<void>
   logout: () => void
 }
 
@@ -43,6 +46,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: '1',
         email,
         name: email.split('@')[0],
+        provider: 'email',
       }
       setUser(mockUser)
       localStorage.setItem('auth_user', JSON.stringify(mockUser))
@@ -59,6 +63,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         id: '1',
         email,
         name,
+        provider: 'email',
+      }
+      setUser(mockUser)
+      localStorage.setItem('auth_user', JSON.stringify(mockUser))
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loginWithGoogle = async (googleUser: any) => {
+    setIsLoading(true)
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500))
+      const mockUser: User = {
+        id: googleUser.id || '1',
+        email: googleUser.email,
+        name: googleUser.name,
+        avatar: googleUser.picture,
+        provider: 'google',
       }
       setUser(mockUser)
       localStorage.setItem('auth_user', JSON.stringify(mockUser))
@@ -80,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: !!user,
         login,
         signup,
+        loginWithGoogle,
         logout,
       }}
     >
