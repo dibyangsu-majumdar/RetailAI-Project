@@ -1,11 +1,19 @@
 'use client'
 
-import React from "react"
-
-import { useState } from 'react'
+import React, { useState } from "react"
 import { Button } from '@/components/ui/button'
-import { MessageSquare, Menu, X } from 'lucide-react'
+import { MessageSquare, Menu, X, LogOut, Settings, Database } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/lib/auth-context'
+import { useRouter, usePathname } from 'next/navigation'
+import Link from 'next/link'
+
+interface NavItem {
+  icon: React.ReactNode
+  label: string
+  description: string
+  href: string
+}
 
 export default function DashboardLayout({
   children,
@@ -17,24 +25,81 @@ export default function DashboardLayout({
   showChat: boolean
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { logout, user } = useAuth()
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const handleLogout = () => {
+    logout()
+    router.push('/auth')
+  }
+
+  const navItems: NavItem[] = [
+    {
+      icon: '📊',
+      label: 'Dashboard',
+      description: 'View KPIs and inventory overview',
+      href: '/dashboard',
+    },
+    {
+      icon: '📈',
+      label: 'Forecasts',
+      description: '30-day demand predictions with confidence levels',
+      href: '/dashboard#forecasts',
+    },
+    {
+      icon: '✅',
+      label: 'Recommendations',
+      description: 'Smart reorder quantities and optimal stock levels',
+      href: '/dashboard#recommendations',
+    },
+    {
+      icon: '🎯',
+      label: 'Simulations',
+      description: 'Test promotion impact and scenarios',
+      href: '/dashboard#simulations',
+    },
+    {
+      icon: '📥',
+      label: 'Data Sources',
+      description: 'Connect or upload inventory data',
+      href: '/dashboard/data-sources',
+    },
+    {
+      icon: '⚙️',
+      label: 'Settings',
+      description: 'Manage account and integrations',
+      href: '/dashboard/settings',
+    },
+  ]
+
+  const isActive = (href: string) => {
+    if (href.includes('#')) {
+      return pathname === href.split('#')[0]
+    }
+    return pathname === href
+  }
 
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar Navigation */}
       <aside
         className={cn(
-          'bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 flex flex-col',
-          sidebarOpen ? 'w-64' : 'w-20'
+          'bg-sidebar text-sidebar-foreground border-r border-sidebar-border transition-all duration-300 flex flex-col overflow-hidden',
+          sidebarOpen ? 'w-72' : 'w-20'
         )}
       >
         {/* Logo */}
         <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
-          {sidebarOpen && (
-            <div>
-              <h2 className="text-lg font-bold">RetailAI</h2>
-              <p className="text-xs text-sidebar-foreground/60">Intelligence</p>
-            </div>
-          )}
+          <Link href="/dashboard" className={cn('flex-1 flex items-center gap-2', !sidebarOpen && 'justify-center')}>
+            {sidebarOpen && (
+              <div>
+                <h2 className="text-lg font-bold">RetailAI</h2>
+                <p className="text-xs text-sidebar-foreground/60">Copilot</p>
+              </div>
+            )}
+            {!sidebarOpen && <span className="text-xl">🤖</span>}
+          </Link>
           <Button
             variant="ghost"
             size="icon"
@@ -46,20 +111,57 @@ export default function DashboardLayout({
         </div>
 
         {/* Navigation Menu */}
-        <nav className="flex-1 p-4 space-y-2">
-          <NavLink icon="📊" label="Dashboard" open={sidebarOpen} active />
-          <NavLink icon="📈" label="Forecasts" open={sidebarOpen} />
-          <NavLink icon="✅" label="Recommendations" open={sidebarOpen} />
-          <NavLink icon="🎯" label="Simulations" open={sidebarOpen} />
-          <NavLink icon="⚙️" label="Settings" open={sidebarOpen} />
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          {navItems.map((item, index) => {
+            const active = isActive(item.href)
+            return (
+              <Link key={index} href={item.href}>
+                <button
+                  className={cn(
+                    'w-full px-3 py-2.5 rounded-lg flex items-center gap-3 text-sm transition-all',
+                    active
+                      ? 'bg-sidebar-accent/20 text-sidebar-accent-foreground'
+                      : 'hover:bg-sidebar-primary/20 text-sidebar-foreground'
+                  )}
+                >
+                  <span className="text-lg flex-shrink-0">{item.icon}</span>
+                  {sidebarOpen && (
+                    <div className="flex-1 text-left">
+                      <p className="font-medium">{item.label}</p>
+                      <p className="text-xs text-sidebar-foreground/60">{item.description}</p>
+                    </div>
+                  )}
+                </button>
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* Footer Info */}
+        {/* Divider */}
+        <div className="border-t border-sidebar-border" />
+
+        {/* User Info */}
         {sidebarOpen && (
-          <div className="p-4 border-t border-sidebar-border text-xs text-sidebar-foreground/60">
-            <p>Simulated forecasts based on historical trends</p>
+          <div className="p-4 space-y-3">
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-sidebar-foreground/60">Logged in as</p>
+              <p className="text-sm font-medium truncate">{user?.email}</p>
+            </div>
           </div>
         )}
+
+        {/* Footer Actions */}
+        <div className="p-3 border-t border-sidebar-border space-y-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleLogout}
+            className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent"
+          >
+            <LogOut size={16} />
+            {sidebarOpen && 'Logout'}
+          </Button>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -67,18 +169,21 @@ export default function DashboardLayout({
         <div className="flex-1 flex flex-col overflow-hidden">
           {/* Top Header */}
           <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
-            <div>
+            <div className="flex-1">
               <h1 className="text-xl font-semibold">Retail Intelligence Copilot</h1>
+              <p className="text-xs text-muted-foreground mt-0.5">Powered by AI forecasting</p>
             </div>
-            <Button
-              onClick={onChatToggle}
-              variant={showChat ? 'default' : 'outline'}
-              size="sm"
-              className="flex gap-2"
-            >
-              <MessageSquare size={16} />
-              {showChat ? 'Hide Chat' : 'AI Copilot'}
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={onChatToggle}
+                variant={showChat ? 'default' : 'outline'}
+                size="sm"
+                className="flex gap-2"
+              >
+                <MessageSquare size={16} />
+                {showChat ? 'Hide Chat' : 'AI Copilot'}
+              </Button>
+            </div>
           </header>
 
           {/* Content Area */}
@@ -88,31 +193,5 @@ export default function DashboardLayout({
         </div>
       </div>
     </div>
-  )
-}
-
-function NavLink({
-  icon,
-  label,
-  open,
-  active = false,
-}: {
-  icon: string
-  label: string
-  open: boolean
-  active?: boolean
-}) {
-  return (
-    <button
-      className={cn(
-        'w-full px-3 py-2 rounded-lg flex items-center gap-3 text-sm transition-colors',
-        active
-          ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-          : 'text-sidebar-foreground hover:bg-sidebar-primary/20'
-      )}
-    >
-      <span className="text-lg">{icon}</span>
-      {open && <span className="flex-1 text-left">{label}</span>}
-    </button>
   )
 }
