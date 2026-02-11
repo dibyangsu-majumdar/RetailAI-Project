@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/lib/auth-context'
-import { LogIn, UserPlus } from 'lucide-react'
+import { LogIn, UserPlus, AlertCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 export default function AuthPage() {
   const router = useRouter()
-  const { login, signup, loginWithGoogle } = useAuth()
+  const supabase = createClient()
   const [isSignUp, setIsSignUp] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,16 +23,41 @@ export default function AuthPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError(null)
 
     try {
       if (isSignUp) {
-        await signup(formData.email, formData.password, formData.name)
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: formData.email,
+          password: formData.password,
+          options: {
+            emailRedirectTo: `${window.location.origin}/dashboard`,
+            data: {
+              full_name: formData.name,
+              display_name: formData.name,
+            },
+          },
+        })
+
+        if (signUpError) throw signUpError
+
+        if (data?.user?.identities?.length === 0) {
+          setError('An account with this email already exists.')
+        } else {
+          router.push('/auth/sign-up-success')
+        }
       } else {
-        await login(formData.email, formData.password)
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        })
+
+        if (signInError) throw signInError
+        router.push('/dashboard')
       }
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Auth error:', error)
+    } catch (err: any) {
+      console.error('Auth error:', err)
+      setError(err.message || 'An error occurred during authentication')
     } finally {
       setIsLoading(false)
     }
@@ -39,19 +65,24 @@ export default function AuthPage() {
 
   const handleGoogleLogin = async () => {
     setIsLoading(true)
+    setError(null)
+
     try {
-      // Simulate Google login - in production, use Google OAuth
-      const mockGoogleUser = {
-        id: 'google_' + Math.random().toString(36).substr(2, 9),
-        email: 'user@gmail.com',
-        name: 'Google User',
-        picture: 'https://via.placeholder.com/40',
-      }
-      await loginWithGoogle(mockGoogleUser)
-      router.push('/dashboard')
-    } catch (error) {
-      console.error('Google auth error:', error)
-    } finally {
+      const { error: googleError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      })
+
+      if (googleError) throw googleError
+    } catch (err: any) {
+      console.error('Google auth error:', err)
+      setError(err.message || 'Failed to sign in with Google')
       setIsLoading(false)
     }
   }
@@ -95,6 +126,13 @@ export default function AuthPage() {
           </CardHeader>
 
           <CardContent>
+            {error && (
+              <div className="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-destructive flex-shrink-0 mt-0.5" />
+                <p className="text-sm text-destructive">{error}</p>
+              </div>
+            )}
+
             <div className="space-y-4">
               {/* Google Sign In */}
               <Button
@@ -184,8 +222,10 @@ export default function AuthPage() {
                 onClick={() => {
                   setIsSignUp(!isSignUp)
                   setFormData({ email: '', password: '', name: '' })
+                  setError(null)
                 }}
                 className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                disabled={isLoading}
               >
                 {isSignUp
                   ? 'Already have an account? Sign in'
@@ -201,15 +241,15 @@ export default function AuthPage() {
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+              14-day free trial, no credit card required
+            </li>
+            <li className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 bg-primary rounded-full" />
               30-day demand forecasts
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />
               Smart reorder recommendations
-            </li>
-            <li className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 bg-primary rounded-full" />
-              Promotion impact simulation
             </li>
             <li className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 bg-primary rounded-full" />

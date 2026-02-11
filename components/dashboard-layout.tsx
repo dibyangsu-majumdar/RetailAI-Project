@@ -4,7 +4,7 @@ import React, { useState } from "react"
 import { Button } from '@/components/ui/button'
 import { MessageSquare, Menu, X, LogOut, Settings, Database } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { useAuth } from '@/lib/auth-context'
+import { useUser } from '@/lib/supabase-auth-provider'
 import { useRouter, usePathname } from 'next/navigation'
 import Link from 'next/link'
 
@@ -129,12 +129,14 @@ export default function DashboardLayout({
         <div className="border-t border-sidebar-border" />
 
         {/* User Info */}
-        {sidebarOpen && (
+        {sidebarOpen && user && (
           <div className="p-4 space-y-3">
             <div className="space-y-1">
               <p className="text-xs font-medium text-sidebar-foreground/60">Logged in as</p>
-              <p className="text-sm font-medium truncate">{user?.name || user?.email}</p>
-              <p className="text-xs text-sidebar-foreground/50 truncate">{user?.email}</p>
+              <p className="text-sm font-medium truncate">{user.full_name || user.email}</p>
+              {user.full_name && (
+                <p className="text-xs text-sidebar-foreground/50 truncate">{user.email}</p>
+              )}
             </div>
           </div>
         )}

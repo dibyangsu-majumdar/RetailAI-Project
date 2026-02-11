@@ -15,7 +15,9 @@ const plans = [
     description: 'Perfect for small retailers',
     price: 99,
     period: '/month',
+    trialDays: 14,
     features: [
+      '14-day free trial',
       '30-day demand forecasts',
       'Up to 100 SKUs',
       'Basic recommendations',
@@ -30,7 +32,9 @@ const plans = [
     price: 299,
     period: '/month',
     popular: true,
+    trialDays: 14,
     features: [
+      '14-day free trial',
       '90-day demand forecasts',
       'Unlimited SKUs',
       'Advanced recommendations',
@@ -74,10 +78,14 @@ export default function PricingPage() {
       <div className="flex-1 overflow-auto">
         <div className="p-6 space-y-6">
           {/* Header */}
-          <div className="text-center space-y-2">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 bg-primary/10 px-4 py-2 rounded-full mb-2">
+              <Check className="w-4 h-4 text-primary" />
+              <span className="text-sm font-medium text-primary">14-day free trial on all plans</span>
+            </div>
             <h1 className="text-3xl font-bold">Simple, Transparent Pricing</h1>
             <p className="text-muted-foreground">
-              Choose the perfect plan for your retail business
+              Choose the perfect plan for your retail business. No credit card required to start.
             </p>
           </div>
 

@@ -1,12 +1,12 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/lib/auth-context'
+import { useUser } from '@/lib/supabase-auth-provider'
 import { useEffect } from 'react'
 
 export default function Home() {
   const router = useRouter()
-  const { isAuthenticated, isLoading } = useAuth()
+  const { isAuthenticated, isLoading } = useUser()
 
   useEffect(() => {
     if (!isLoading) {
@@ -18,5 +18,9 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading, router])
 
-  return null
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-pulse text-muted-foreground">Loading...</div>
+    </div>
+  )
 }
